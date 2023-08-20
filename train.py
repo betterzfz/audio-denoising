@@ -1,11 +1,14 @@
 import librosa
 import glob
 
+epochs = 500
 sample_rate = 16000
+# instrument = 'bass_acoustic'
+instrument = 'vocal_synthetic'
 # Set the directory where the audio files are stored
 # directory = './train/'
-directory = './train/vocal_synthetic/'
-# directory = './train/string_acoustic/'
+# directory = './train/vocal_synthetic/'
+directory = f'./train/{instrument}/'
 
 # Create a list of all the file paths
 clean_files = glob.glob(directory + '*.wav')
@@ -23,6 +26,7 @@ def add_noise(clean_audio, noise_level=0.5):
 
 from tensorflow.keras.layers import Input, Conv1D, MaxPooling1D, UpSampling1D, Concatenate
 from tensorflow.keras.models import Model
+from tensorflow.keras.optimizers import Adam
 
 def build_wave_u_net():
     input_audio = Input(shape=(None, 1))
@@ -44,7 +48,9 @@ def build_wave_u_net():
     conv4 = Conv1D(1, 15, activation='tanh', padding='same')(concat4)
 
     model = Model(inputs=input_audio, outputs=conv4)
-    model.compile(optimizer='adam', loss='mse')
+    # optimizer = Adam(learning_rate=0.001)
+    model.compile(optimizer='adam', loss='mse') # This will use the default learning rate of 0.001
+    # model.compile(optimizer=optimizer, loss='mse') # This will use the default learning rate of 0.001
 
     return model
 
@@ -73,12 +79,11 @@ from sklearn.model_selection import train_test_split
 
 X_train, X_test, Y_train, Y_test = train_test_split(X_train, Y_train, test_size=0.2, random_state=42)
 
-epochs = 5
-
 # Assume X_train, Y_train are your training data and labels
 history = model.fit(X_train, Y_train, epochs=epochs, batch_size=20, validation_split=0.2)
 
-model.save(f'./models/vocal_synthetic_epochs_{epochs}')
+# model.save(f'./models/vocal_synthetic_epochs_{epochs}')
+model.save(f'./models/{instrument}_epochs_{epochs}')
 
 train_loss = history.history['loss']
 val_loss = history.history['val_loss']

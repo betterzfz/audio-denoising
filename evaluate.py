@@ -5,11 +5,15 @@ import numpy as np
 import librosa
 import glob
 
+instrument = 'vocal_synthetic'
+epochs = 150
 # Load the model
-loaded_model = load_model('./models/wave_u_net_model_epochs_50')
+# loaded_model = load_model('./models/string_acoustic_epochs_50')
+loaded_model = load_model(f'./models/{instrument}_epochs_{epochs}')
 
 # Set the directory where the audio files are stored
-directory = './test/vocal_synthetic/'
+directory = f'./test/{instrument}/'
+# directory = './test/string_acoustic/'
 
 # Create a list of all the file paths
 clean_files = glob.glob(directory + '*.wav')
@@ -66,7 +70,34 @@ sample_rate = 16000
 import soundfile as sf
 
 for i, audio in enumerate(X_test):
-    sf.write(f'./evaluation/vocal_synthetic/noisy_audio_{i}.wav', audio, sample_rate)
+    sf.write(f'./evaluation/{instrument}/noisy_audio_{i}.wav', audio, sample_rate)
 
 for i, audio in enumerate(Y_pred):
-    sf.write(f'./evaluation/vocal_synthetic/denoised_audio_{i}.wav', audio, sample_rate)
+    sf.write(f'./evaluation/{instrument}/denoised_audio_{i}.wav', audio, sample_rate)
+
+
+import matplotlib.pyplot as plt
+
+# Plotting clean audio
+plt.figure(figsize=(10, 4))
+plt.plot(Y_test[0])
+plt.title('Clean Audio')
+plt.xlabel('Sample')
+plt.ylabel('Amplitude')
+plt.show()
+
+# Plotting noisy audio
+plt.figure(figsize=(10, 4))
+plt.plot(X_test[0])
+plt.title('Noisy Audio')
+plt.xlabel('Sample')
+plt.ylabel('Amplitude')
+plt.show()
+
+# Plotting denoised audio
+plt.figure(figsize=(10, 4))
+plt.plot(Y_pred[0])
+plt.title('Denoised Audio')
+plt.xlabel('Sample')
+plt.ylabel('Amplitude')
+plt.show()
