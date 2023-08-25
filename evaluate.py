@@ -5,11 +5,18 @@ import numpy as np
 import librosa
 import glob
 
+# instrument = 'string_acoustic'
+# instrument = 'bass_acoustic'
 instrument = 'vocal_synthetic'
 epochs = 150
+noise_level = 0.5
+learning_rate = 0.0005
+sample_rate = 16000
+
+model_name = f'{instrument}_epochs_{epochs}_nl_{noise_level}_lr_{learning_rate}'
 # Load the model
 # loaded_model = load_model('./models/string_acoustic_epochs_50')
-loaded_model = load_model(f'./models/{instrument}_epochs_{epochs}')
+loaded_model = load_model(f'./models/{model_name}')
 
 # Set the directory where the audio files are stored
 directory = f'./test/{instrument}/'
@@ -22,7 +29,7 @@ def load_audio(file_path):
     audio, _ = librosa.load(file_path, sr=None)
     return audio
 
-def add_noise(clean_audio, noise_level=0.05):
+def add_noise(clean_audio, noise_level=0.5):
     noise = np.random.normal(0, noise_level, clean_audio.shape)
     noisy_audio = clean_audio + noise
     return noisy_audio
@@ -31,7 +38,8 @@ X_test, Y_test = [], []
 
 for file_path in clean_files:
     clean_audio = load_audio(file_path)
-    noisy_audio = add_noise(clean_audio)
+    noisy_audio = add_noise(clean_audio, noise_level)
+    # noisy_audio = add_noise(clean_audio, 1)
 
     # Reshape for training, e.g., add channel dimension
     clean_audio = clean_audio.reshape(-1, 1)
@@ -64,8 +72,6 @@ def evaluate_model(model, X_test, Y_test):
     return mse, snr, Y_pred
 
 mse, snr, Y_pred = evaluate_model(loaded_model, X_test, Y_test)
-
-sample_rate = 16000
 
 import soundfile as sf
 
