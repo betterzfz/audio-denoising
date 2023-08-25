@@ -1,14 +1,18 @@
 import librosa
 import glob
+import time
 
-epochs = 500
-sample_rate = 16000
+epochs = 150
+# instrument = 'string_acoustic'
 # instrument = 'bass_acoustic'
 instrument = 'vocal_synthetic'
 # Set the directory where the audio files are stored
 # directory = './train/'
 # directory = './train/vocal_synthetic/'
 directory = f'./train/{instrument}/'
+noise_level = 0.5
+learning_rate = 0.0005
+sample_rate = 16000
 
 # Create a list of all the file paths
 clean_files = glob.glob(directory + '*.wav')
@@ -48,9 +52,9 @@ def build_wave_u_net():
     conv4 = Conv1D(1, 15, activation='tanh', padding='same')(concat4)
 
     model = Model(inputs=input_audio, outputs=conv4)
-    # optimizer = Adam(learning_rate=0.001)
-    model.compile(optimizer='adam', loss='mse') # This will use the default learning rate of 0.001
-    # model.compile(optimizer=optimizer, loss='mse') # This will use the default learning rate of 0.001
+    optimizer = Adam(learning_rate=learning_rate)
+    # model.compile(optimizer='adam', loss='mse') # This will use the default learning rate of 0.001
+    model.compile(optimizer=optimizer, loss='mse') # This will use the default learning rate of 0.001
 
     return model
 
@@ -62,7 +66,7 @@ X_train, Y_train = [], []
 
 for file_path in clean_files:
     clean_audio = load_audio(file_path)
-    noisy_audio = add_noise(clean_audio)
+    noisy_audio = add_noise(clean_audio, noise_level)
 
     # Reshape for training, e.g., add channel dimension
     clean_audio = clean_audio.reshape(-1, 1)
@@ -79,11 +83,24 @@ from sklearn.model_selection import train_test_split
 
 X_train, X_test, Y_train, Y_test = train_test_split(X_train, Y_train, test_size=0.2, random_state=42)
 
+# Record the current time before training
+start_time = time.time()
+
 # Assume X_train, Y_train are your training data and labels
 history = model.fit(X_train, Y_train, epochs=epochs, batch_size=20, validation_split=0.2)
 
+# Record the current time after training
+end_time = time.time()
+
+# Compute the difference
+training_time = end_time - start_time
+
+model_name = f'{instrument}_epochs_{epochs}_nl_{noise_level}_lr_{learning_rate}'
+# Print the result
+print(f"{model_name} Model training took {training_time} seconds")
+
 # model.save(f'./models/vocal_synthetic_epochs_{epochs}')
-model.save(f'./models/{instrument}_epochs_{epochs}')
+model.save(f'./models/{model_name}')
 
 train_loss = history.history['loss']
 val_loss = history.history['val_loss']
