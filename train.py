@@ -2,16 +2,18 @@ import librosa
 import glob
 import time
 
-epochs = 150
+
 # instrument = 'string_acoustic'
 # instrument = 'bass_acoustic'
 instrument = 'vocal_synthetic'
+epochs = 150
+noise_level = 0.5
+learning_rate = 0.0005
+
 # Set the directory where the audio files are stored
 # directory = './train/'
 # directory = './train/vocal_synthetic/'
 directory = f'./train/{instrument}/'
-noise_level = 0.5
-learning_rate = 0.0005
 sample_rate = 16000
 
 # Create a list of all the file paths
